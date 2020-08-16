@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 NAME HERE <EMAIL ADDRESS>
 
@@ -13,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"fmt"
@@ -31,7 +32,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Version: version,
 	Use:   "qaplactl",
-	Short: "A brief description of your application",
+	Short: "Interact with the qapla'-system",
 	Long: `                                                                              @@
          @@@@@/       @@@@            @.            @@@@          ,@@@.     @@% 
        @@@@&        @@@@            @@@@@@@@      @@@&          #@@@        %@  
@@ -41,9 +42,7 @@ var rootCmd = &cobra.Command{
    @@                     %@     @@@                 &@                @        
                                                                                 
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Qaplactl is a CLI to interact with the Qapla'-Application-Framework`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },

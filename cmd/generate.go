@@ -1,3 +1,4 @@
+package cmd
 /*
 Copyright © 2020 NAME HERE <EMAIL ADDRESS>
 
@@ -13,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"text/template"
@@ -24,22 +24,21 @@ import (
 	"github.com/42nerds/qaplactl/templates"
 )
 
-// Project contains name, license and paths to projects.
-type Project struct {
-	// v2
-	PkgName      string
-	Copyright    string
-	AbsolutePath string
-	Legal        License
-	Viper        bool
-	AppName      string
+// ApplicationSpec defines the desired state of Application
+type ApplicationSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+
+	DisplayName string                `json:"displayName"`
+	IconSrc     string                `json:"iconSrc"`
+	MenuItems   []ApplicationMenuItem `json:"menuItems,omitempty"`
 }
 
-type License struct {
-	Name            string   // The type of license in use
-	PossibleMatches []string // Similar names to guess
-	Text            string   // License text data
-	Header          string   // License header for source files
+// ApplicationMenuItem ...
+type ApplicationMenuItem struct {
+	Text  string                `json:"text"`
+	Items []ApplicationMenuItem `json:"items,omitempty"`
+	Href  string                `json:"href,omitempty"`
 }
 
 // generateCmd represents the generate command
@@ -54,15 +53,26 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		mainFile, err := os.Create(args[0])
+		mainFile, err := os.Create("main.go.generated")
     if err != nil {
         fmt.Println(err)
 		}
 
-		p := Project{};
-
+		applicationFile, err := os.Create("application.yaml")
+    if err != nil {
+        fmt.Println(err)
+		}
+		
 		mainTemplate := template.Must(template.New("main").Parse(string(tpl.MainTemplate())))
-		err = mainTemplate.Execute(mainFile, p)
+		err = mainTemplate.Execute(mainFile, nil)
+		if err != nil {
+			fmt.Println(err)
+		}
+		
+		a := ApplicationSpec{DisplayName: args[0], IconSrc: "https://icons.com/headicon"}
+
+		applicationTemplate := template.Must(template.New("application").Parse(string(tpl.ApplicationTemplate())))
+		err = applicationTemplate.Execute(applicationFile, a)
 		if err != nil {
 			fmt.Println(err)
 		}

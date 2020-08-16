@@ -24,8 +24,8 @@ checksum:
 snapshot:
   name_template: "{{ .Tag }}-next"
 brews:
-  - name: cli
-    github:
+  - name: qaplactl
+    tap:
       owner: 42nerds
       name: homebrew-tap
     commit_author: 
