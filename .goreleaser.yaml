@@ -1,0 +1,40 @@
+project_name: qaplactl
+
+before:
+  hooks:
+    # you may remove this if you don't use vgo
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+builds:
+- env:
+  - CGO_ENABLED=0
+  ldflags:
+  - -X github.com/42nerds/qaplactl/cmd.version={{.Version}}
+
+archives:
+- replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+brews:
+  - name: cli
+    github:
+      owner: 42nerds
+      name: homebrew-tap
+    commit_author: 
+      name: 42 N.E.R.D.S. Bot
+      email: support@42nerds.com
+    homepage: https://www.42nerds.com
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
