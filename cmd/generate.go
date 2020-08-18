@@ -1,4 +1,5 @@
 package cmd
+
 /*
 Copyright © 2020 NAME HERE <EMAIL ADDRESS>
 
@@ -16,30 +17,18 @@ limitations under the License.
 */
 
 import (
-	"text/template"
 	"fmt"
+	"log"
 	"os"
+	"regexp"
+	"strings"
+	"text/template"
 
+	qapla "github.com/42nerds/qapla-base/api/v1alpha1"
+	tpl "github.com/42nerds/qaplactl/templates"
 	"github.com/spf13/cobra"
-	"github.com/42nerds/qaplactl/templates"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-// ApplicationSpec defines the desired state of Application
-type ApplicationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	DisplayName string                `json:"displayName"`
-	IconSrc     string                `json:"iconSrc"`
-	MenuItems   []ApplicationMenuItem `json:"menuItems,omitempty"`
-}
-
-// ApplicationMenuItem ...
-type ApplicationMenuItem struct {
-	Text  string                `json:"text"`
-	Items []ApplicationMenuItem `json:"items,omitempty"`
-	Href  string                `json:"href,omitempty"`
-}
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
@@ -51,27 +40,56 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		mainFile, err := os.Create("main.go.generated")
-    if err != nil {
-        fmt.Println(err)
+		// mainFile, err := os.Create("main.go.generated")
+		// if err != nil {
+		//     fmt.Println(err)
+		// }
+
+		if _, err := os.Stat(args[0]); os.IsNotExist(err) {
+			os.Mkdir(args[0], os.FileMode(0775))
+		} else {
+			log.Fatalf("Target Directory '%s' exists allready and is not empty", args[0])
 		}
 
-		applicationFile, err := os.Create("application.yaml")
-    if err != nil {
-        fmt.Println(err)
+		if _, err := os.Stat(args[0] + "/manifests"); os.IsNotExist(err) {
+			os.Mkdir(args[0]+"/manifests", os.FileMode(0775))
 		}
-		
-		mainTemplate := template.Must(template.New("main").Parse(string(tpl.MainTemplate())))
-		err = mainTemplate.Execute(mainFile, nil)
+
+		applicationFile, err := os.Create(args[0] + "/manifests/application.yaml")
 		if err != nil {
 			fmt.Println(err)
 		}
-		
-		a := ApplicationSpec{DisplayName: args[0], IconSrc: "https://icons.com/headicon"}
 
-		applicationTemplate := template.Must(template.New("application").Parse(string(tpl.ApplicationTemplate())))
+		// mainTemplate := template.Must(template.New("main").Parse(string(tpl.MainTemplate())))
+		// err = mainTemplate.Execute(mainFile, nil)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		if len(args) == 0 {
+			args[0] = "Example Application"
+		}
+
+		reg, err := regexp.Compile("[^a-zA-Z0-9-]+")
+		if err != nil {
+			log.Fatal(err)
+		}
+		escapedName := strings.ReplaceAll(args[0], " ", "-")
+		escapedName = reg.ReplaceAllString(escapedName, "")
+		escapedName = strings.ToLower(escapedName)
+
+		a := qapla.Application{
+			ObjectMeta: v1.ObjectMeta{
+				Name: escapedName,
+			},
+			Spec: qapla.ApplicationSpec{
+				DisplayName: args[0],
+				IconSrc:     "https://example.com/Your/Application/Icon",
+			},
+		}
+
+		applicationTemplate := template.Must(template.New("application").Parse(tpl.ApplicationTemplate))
 		err = applicationTemplate.Execute(applicationFile, a)
 		if err != nil {
 			fmt.Println(err)
